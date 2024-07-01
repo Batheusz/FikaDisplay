@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Web Server</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: rgba(255, 255, 255, 0.5);
+          margin: 0;
+          padding: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+        }
+
+        .container {
+          padding: 20px;
+          max-width: 600px;
+          background-color: rgba(255, 255, 255, 0.8);
+          border-radius: 10px;
+          overflow: auto;
+        }
+
+        .valor-label {
+          display: block;
+          margin-bottom: 5px;
+        }
+
+        input[type='text'], input[type='number'] {
+          width: calc(100% - 32px);
+          padding: 10px;
+          margin-bottom: 10px;
+        }
+
+        input[type='submit'] {
+          background-color: #4CAF50;
+          color: white;
+          padding: 10px 15px;
+          border: none;
+          cursor: pointer;
+          display: block;
+          margin: 0 auto;
+          margin-top: 20px;
+        }
+
+        input[type='submit']:hover {
+          background-color: #45a049;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 20px;
+        }
+
+        th, td {
+          border: 1px solid #ddd;
+          padding: 8px;
+          text-align: left;
+        }
+        th {
+          background-color: #f2f2f2;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 style="text-align: center;">Driveline SW & Calibration</h2>
+        <form action='/save' method="post" onsubmit='return validateForm()'>
+            <label class='valor-label' for='textValue'>Texto até 8 letras:</label>
+            <input type='text' id='textValue' name='textValue' maxlength='8'><br><br>
+            <label class='valor-label' for='brightness'>Brightness:</label>
+            <input type='number' id='brightness' name='brightness' min='0' max='15'><br><br>
+            <label class='valor-label'>Escolha a animação:</label>
+            <select id='animationType' name='animationType'>
+                <option value='0'>Walker</option>
+                <option value='1'>Pacman</option>
+                <option value='2'>Scroll</option>
+            </select><br><br>
+            <input type='submit' value='Send'>
+        </form>
+
+        <table>
+            <thead>
+              <tr>
+                <th>Ordem</th>
+                <th>Nome</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Jeff</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>Barcellos</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Pablo</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Celio</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>Heron</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>Alan</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>Velasques</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>Diego</td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td>Mellem</td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td>Jonathan</td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td>Wata</td>
+              </tr>
+              <tr>
+                <td>11</td>
+                <td>Gui</td>
+              </tr>
+              <!-- Adicione mais linhas conforme necessário -->
+            </tbody>
+          </table>
+
+    </div>
+
+<script>
+    function validateForm() {
+        var animationOption = document.getElementById('animationOption');
+        if (animationOption.checked) {
+            var brightness = document.getElementById('brightness').value;
+            var textValue = document.getElementById('textValue').value;
+            textValue = textValue.slice(0, 8);
+            document.getElementById('textValue').value = textValue;
+
+            if (brightness === '') {
+                document.getElementById('brightness').value = '0';
+            }
+        return true;
+        }
+    }
+</script>
+
+</body>
+</html>
