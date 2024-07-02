@@ -3,14 +3,14 @@
 #include <MD_Parola.h>
 #include <MD_MAX72xx.h>
 #include <SPI.h>
-//#include "sprite.h"
+#include "sprite.h"
 // Webserver
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <EEPROM.h>
 // Timer
-//#include <TickTwo.h>
+#include <TickTwo.h>
 
 // Functions
 void IRAM_ATTR handleTouch();
@@ -30,7 +30,7 @@ MD_Parola Display = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 #define ADDR_TEXT_VALUE (ADDR_ANIMATION_TYPE + sizeof(uint8_t))
 
 // ESP32 webserver config
-const char* ssid = "Display Driveline SW";
+const char* ssid = "Driveline_SW_&_Calibration";
 const char* password = "Geraldo2024";
 AsyncWebServer server(80);; // Create a web server instance on port 80
 IPAddress apIP(192, 168, 1, 1);  // IP address for the access point
@@ -45,13 +45,12 @@ IPAddress subnet(255, 255, 255, 0);  // Subnet mask for the access point
 #define TIME_SET 900000 // 15*60*1000
 #define TIME_DEBOUNCE 250
 bool flagSleep = false;
-// TickTwo timer15Min(handleTimer15min, TIME_SET);
+TickTwo timer15Min(handleTimer15min, TIME_SET);
 uint32_t lastTime = 0;
 
 // Global variables
-uint8_t brightness, animationType, textType = 0;
-uint8_t prevLen = 100;
-uint16_t pauseTime = 5000;
+uint8_t brightness, animationType = 0;
+uint16_t pauseTime = 3000;
 uint16_t scrollSpeed = 50;
 String textInpt = "Vazio";
 
@@ -250,10 +249,7 @@ void handleData(AsyncWebServerRequest *request) {
 
     EEPROM.put(ADDR_BRIGHTNESS, brightness);
     EEPROM.put(ADDR_ANIMATION_TYPE, animationType);
-    for (int i = 0; i < prevLen; i++)
-      EEPROM.write(ADDR_TEXT_VALUE + i, 0); 
     EEPROM.put(ADDR_TEXT_VALUE, textInpt);
-    prevLen = textInpt.length();
     EEPROM.commit();
     // Send response to client
     request->send(200, "text/plain", "Data saved successfully");
@@ -292,9 +288,9 @@ void setup() {
 
   // Sleep set up
   pinMode(TOUCH0_PIN, INPUT_PULLUP);
-  //touchSleepWakeUpEnable(TOUCH1_PIN, TOUCH_THRESHOLD);
-  //touchAttachInterrupt(TOUCH0_PIN, handleTouch, TOUCH_THRESHOLD);
-  // timer15Min.start();
+  touchSleepWakeUpEnable(TOUCH1_PIN, TOUCH_THRESHOLD);
+  touchAttachInterrupt(TOUCH0_PIN, handleTouch, TOUCH_THRESHOLD);
+  timer15Min.start();
 
   // Display set up
   Display.begin();
@@ -303,36 +299,36 @@ void setup() {
 }
 
 void loop() {
-  //touchAttachInterrupt(TOUCH0_PIN, handleTouch, TOUCH_THRESHOLD);
-  //timer15Min.update();
-  Serial.print("Brilho:"); Serial.println(brightness);
-  Serial.print("Animaçao:"); Serial.println(animationType);
-  Serial.print("Texto:"); Serial.println(textInpt.c_str());
-  delay(1000);
+  touchAttachInterrupt(TOUCH0_PIN, handleTouch, TOUCH_THRESHOLD);
+  timer15Min.update();
+  // Serial.print("Brilho:"); Serial.println(brightness);
+  // Serial.print("Animaçao:"); Serial.println(animationType);
+  // Serial.print("Texto:"); Serial.println(textInpt.c_str());
+  // delay(10);
 
-  // if (Display.displayAnimate()) { 
-  //   Display.setIntensity(brightness);
-  //   switch (animationType)
-  //   {
-  //     case 0:
-  //       Display.setSpriteData(walker, W_WALKER, F_WALKER, walker, W_WALKER, F_WALKER);
-  //       Display.displayText(textInpt.c_str(), PA_CENTER, scrollSpeed, pauseTime, PA_SPRITE, PA_SPRITE);
-  //       break;
-  //     case 1:
-  //       Display.setSpriteData(pacman1, W_PMAN1, F_PMAN1, pacman2, W_PMAN2, F_PMAN2);
-  //       Display.displayText(textInpt.c_str(), PA_CENTER, scrollSpeed, pauseTime, PA_SPRITE, PA_SPRITE);
-  //       break;
-  //     case 2:
-  //       Display.displayText(textInpt.c_str(), PA_CENTER, scrollSpeed, pauseTime, PA_SCROLL_RIGHT);
-  //       break;
-  //   }
-  //   Display.displayClear();
-  // }
+  if (Display.displayAnimate()) { 
+    Display.setIntensity(brightness);
+    switch (animationType)
+    {
+      case 0:
+        Display.setSpriteData(walker, W_WALKER, F_WALKER, walker, W_WALKER, F_WALKER);
+        Display.displayText(textInpt.c_str(), PA_CENTER, scrollSpeed, pauseTime, PA_SPRITE, PA_SPRITE);
+        break;
+      case 1:
+        Display.setSpriteData(pacman1, W_PMAN1, F_PMAN1, pacman2, W_PMAN2, F_PMAN2);
+        Display.displayText(textInpt.c_str(), PA_CENTER, scrollSpeed, pauseTime, PA_SPRITE, PA_SPRITE);
+        break;
+      case 2:
+        Display.displayText(textInpt.c_str(), PA_CENTER, scrollSpeed, pauseTime, PA_SCROLL_RIGHT);
+        break;
+    }
+    Display.displayClear();
+  }
 
-  // if (flagSleep) {
-  //   flagSleep = false;
-  //   Display.displayClear();
-  //   touchDetachInterrupt(TOUCH0_PIN);
-  //   esp_deep_sleep_start();
-  // }
+  if (flagSleep) {
+    flagSleep = false;
+    Display.displayClear();
+    touchDetachInterrupt(TOUCH0_PIN);
+    esp_deep_sleep_start();
+  }
 }
