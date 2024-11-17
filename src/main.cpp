@@ -14,15 +14,17 @@
 
 // Functions
 void IRAM_ATTR handleTouch();
-void handleTimer15min();
+// void handleTimer15min();
 void handleRoot();
 void handleData();
 
 // Display config
 #define HARDWARE_TYPE MD_MAX72XX::DR1CR0RR0_HW
 #define MAX_DEVICES 4
+#define DATA_PIN 19
+#define CLOCK_PIN 18
 #define CS_PIN 5
-MD_Parola Display = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
+MD_Parola Display = MD_Parola(HARDWARE_TYPE,DATA_PIN, CLOCK_PIN, CS_PIN, MAX_DEVICES);
 
 // Set up EEPROM size
 #define ADDR_BRIGHTNESS 0
@@ -37,15 +39,15 @@ IPAddress apIP(192, 168, 1, 1);  // IP address for the access point
 IPAddress subnet(255, 255, 255, 0);  // Subnet mask for the access point
 
 // Touch config
-#define TOUCH_THRESHOLD 20
-#define TOUCH0_PIN T8
-#define TOUCH1_PIN T3
+#define TOUCH_THRESHOLD 60
+#define TOUCH_SLEEP_PIN T8
+#define TOUCH_WAKE_PIN T3
 
 // Sleep config
-#define TIME_SET 900000 // 15*60*1000
+// #define TIME_SET 900000 // 15*60*1000
 #define TIME_DEBOUNCE 250
 bool flagSleep = false;
-TickTwo timer15Min(handleTimer15min, TIME_SET);
+// TickTwo timer15Min(handleTimer15min, TIME_SET);
 uint32_t lastTime = 0;
 
 // Global variables
@@ -63,9 +65,9 @@ void IRAM_ATTR handleTouch() {
   }  
 }
 
-void handleTimer15min() {
-  flagSleep = true;
-}
+// void handleTimer15min() {
+//   flagSleep = true;
+// }
 
 void handleRoot(AsyncWebServerRequest *request) {
   String message = R"(
@@ -211,6 +213,10 @@ void handleRoot(AsyncWebServerRequest *request) {
     <td>11</td>
     <td>Gui</td>
     </tr>
+    <tr>
+    <td>12</td>
+    <td>João</td>
+    </tr
     <!-- Adicione mais linhas conforme necessário -->
     </tbody>
     </table>
@@ -219,8 +225,7 @@ void handleRoot(AsyncWebServerRequest *request) {
 
     <script>
     function validateForm() {
-    var animationOption = document.getElementById('animationOption');
-    if (animationOption.checked) {
+    var animationType = document.getElementById('animationType').value;
     var brightness = document.getElementById('brightness').value;
     var textValue = document.getElementById('textValue').value;
     textValue = textValue.slice(0, 8);
@@ -229,8 +234,10 @@ void handleRoot(AsyncWebServerRequest *request) {
     if (brightness === '') {
     document.getElementById('brightness').value = '0';
     }
-    return true;
+    if (animationType === '') {
+    document.getElementById('animationType').value = '0';
     }
+    return true;
     }
     </script>
 
@@ -287,10 +294,10 @@ void setup() {
   EEPROM.get(ADDR_TEXT_VALUE, textInpt);
 
   // Sleep set up
-  pinMode(TOUCH0_PIN, INPUT_PULLUP);
-  touchSleepWakeUpEnable(TOUCH1_PIN, TOUCH_THRESHOLD);
-  touchAttachInterrupt(TOUCH0_PIN, handleTouch, TOUCH_THRESHOLD);
-  timer15Min.start();
+  pinMode(TOUCH_SLEEP_PIN, INPUT_PULLUP);
+  touchSleepWakeUpEnable(TOUCH_WAKE_PIN, TOUCH_THRESHOLD);
+  touchAttachInterrupt(TOUCH_SLEEP_PIN, handleTouch, TOUCH_THRESHOLD);
+  // timer15Min.start();
 
   // Display set up
   Display.begin();
@@ -299,12 +306,12 @@ void setup() {
 }
 
 void loop() {
-  touchAttachInterrupt(TOUCH0_PIN, handleTouch, TOUCH_THRESHOLD);
-  timer15Min.update();
+  touchAttachInterrupt(TOUCH_SLEEP_PIN, handleTouch, TOUCH_THRESHOLD);
+  // timer15Min.update();
   // Serial.print("Brilho:"); Serial.println(brightness);
   // Serial.print("Animaçao:"); Serial.println(animationType);
   // Serial.print("Texto:"); Serial.println(textInpt.c_str());
-  // delay(10);
+  // delay(1000);
 
   if (Display.displayAnimate()) { 
     Display.setIntensity(brightness);
@@ -328,7 +335,7 @@ void loop() {
   if (flagSleep) {
     flagSleep = false;
     Display.displayClear();
-    touchDetachInterrupt(TOUCH0_PIN);
+    touchDetachInterrupt(TOUCH_SLEEP_PIN);
     esp_deep_sleep_start();
   }
 }

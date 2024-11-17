@@ -140,6 +140,10 @@
                 <td>11</td>
                 <td>Gui</td>
               </tr>
+              <tr>
+                <td>12</td>
+                <td>João</td>
+              </tr>
               <!-- Adicione mais linhas conforme necessário -->
             </tbody>
           </table>
@@ -148,18 +152,19 @@
 
 <script>
     function validateForm() {
-        var animationOption = document.getElementById('animationOption');
-        if (animationOption.checked) {
-            var brightness = document.getElementById('brightness').value;
-            var textValue = document.getElementById('textValue').value;
-            textValue = textValue.slice(0, 8);
-            document.getElementById('textValue').value = textValue;
-
-            if (brightness === '') {
-                document.getElementById('brightness').value = '0';
-            }
-        return true;
+        var animationType = document.getElementById('animationType').value;
+        var brightness = document.getElementById('brightness').value;
+        var textValue = document.getElementById('textValue').value;
+        var textIlmValue = document.getElementById('textIlmValue').value;
+        textValue = textValue.slice(0, 8);
+        document.getElementById('textValue').value = textValue;
+        if (brightness === '') {
+            document.getElementById('brightness').value = '0';
         }
+        if (animationType === '') {
+            document.getElementById('animationType').value = '0';
+        }
+        return true;
     }
 </script>
 
